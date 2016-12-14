@@ -3,8 +3,8 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 const precss = require('precss');
-const testMode = false;
 
+const testMode = false;
 
 module.exports = {
     entry: {
