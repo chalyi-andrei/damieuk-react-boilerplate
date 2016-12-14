@@ -1,20 +1,21 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const prod = process.env.NODE_ENV === 'production';
 const autoprefixer = require('autoprefixer');
 const precss = require('precss');
+const testMode = false;
+
 
 module.exports = {
     entry: {
-        js: ['./app/js/app.js'],
-        css:  ['./app/scss/global.scss']
+        js: testMode ? ['./test/ComponentTest.js'] : ['./app/js/app.js'],
+        css: ['./app/scss/global.scss']
     },
 
     output: {
-        filename: 'app.js',
-        path: path.resolve(__dirname, "client"),
-        publicPath: prod ? '/client/' : 'http://localhost:3000/client/'
+        filename:  testMode ? 'spec.js' : 'app.js',
+        path: path.resolve(__dirname, testMode ? 'test' : 'client'),
+        publicPath:  testMode ? '/test/' : '/client/'
     },
 
     watch: true,
@@ -34,6 +35,10 @@ module.exports = {
 
         loaders: [
             {
+                test: /\.(eot|svg|ttf|woff|woff2)$/,
+                loader: 'file?name=fonts/[name].[ext]'
+            },
+            {
                 test: /\.js$/,
                 loader: 'babel-loader',
                 query: {
@@ -41,11 +46,10 @@ module.exports = {
                 }
             }, {
                 test: /\.css$/,
-                loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
+                loader: 'style-loader!css-loader?sourceMap?modules=true&localIdentName=[local]_[hash:base64:5]!postcss?sourceMap'
             }, {
                 test: /\.scss$/,
-                // loaders: ["style-loader", "css-loader", "sass-loader"],
-                loader: ExtractTextPlugin.extract('style-loader', 'css-loader?sourceMap!resolve-url!sass-loader?sourceMap')
+                loader: ExtractTextPlugin.extract('style-loader', 'css-loader?sourceMap!autoprefixer-loader!resolve-url!sass-loader?sourceMap')
             }
         ],
 
@@ -60,22 +64,17 @@ module.exports = {
         ];
     },
 
-    debug: true,
-
     devtool: "inline-source-map",
 
     devServer: {
         hot: true,
         host: 'localhost',
-        port: 3000
-        // historyApiFallback: true
+        port: 3000,
+        historyApiFallback: true
     },
 
     plugins: [
-        new webpack.ProvidePlugin({
-            React: 'react',
-            Router: 'react-router'
-        }),
+        new webpack.optimize.DedupePlugin(),
         new ExtractTextPlugin('global.css', {
             allChunks: true
         }),
